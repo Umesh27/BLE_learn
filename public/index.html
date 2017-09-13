@@ -22,7 +22,6 @@
 		<form>
 			<input type="text" id="message" /> <!--text form to send data to the server-->
 			<input id="submit" type="button" value="Send data to Server">
-			<input id="get" type="button" value="get data from Server">
 			<div id="content"></div> <!--This is where the data from the server is added-->
 		</form>
 
@@ -33,17 +32,6 @@
 				var socket = io.connect("/");
 				document.getElementById("submit").disabled = false;
 				//Initializing the connection with the server via websockets 
-				/*
-				$(function(){
-					$('#get').click(function(){
-						console.log(message);
-						socket.on("message", function(message){
-							$('#content').append('<div >'+"Hello world "+message+'</div>'); //appending the data on the page using Jquery 
-						});
-					});
-	
-				});*/
-				
 				///*
 				socket.on("message", function(message){
 					//

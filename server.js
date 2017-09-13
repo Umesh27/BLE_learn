@@ -204,25 +204,18 @@ io.sockets.on('connection',
 			    	}
 			});
 		});
-		console.log("In socket connection : !!!!!!!!!!");
-		socket.emit('message', fromBluetooth);
-		/*	
-		socket.on('get', function(){
-			console.log("In get function ", fromBluetooth);
-			//socket.emit('message', fromBluetooth);
-			socket.send(fromBluetooth);
-		});
-		*/
+		//console.log("In socket connection : !!!!!!!!!!");
+		//socket.emit('message', fromBluetooth);
 		socket.on('message', function(data) {
 			console.log('Ready in send function');
 			if (txCharacteristic && rxCharacteristic) {
 				console.log(data);
 			        txCharacteristic.write(Buffer.from(data));
 				console.log('Ready2 in send function');
-				//var ack_to_client = fromBluetooth;//data;
-				//console.log(ack_to_client);
+				var ack_to_client = fromBluetooth;//data;
+				console.log(ack_to_client);
 				//socket.send(JSON.stringify(ack_to_client));	//Sending the Acknowledgement back to the client , this will trigger "message" event on the clients side
-				//socket.send(ack_to_client);	//Sending the Acknowledgement back to the client , this will trigger "message" event on the clients side
+				socket.send(ack_to_client);	//Sending the Acknowledgement back to the client , this will trigger "message" event on the clients side
                         }
 		});
 
