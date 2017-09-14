@@ -16,14 +16,21 @@
 			<button class="btn" id="scan">Scan for peripherals</button>
 			<p id="found"></p>
 			<div id="peripherals"></div>
+		</div>
+		<div>
+			<input type="text" id="message" /> <!--text form to send data to the server-->
+			<input id="submit" type="button" value="Send data to Server">
+			<input id="get" type="button" value="Get data from Bluetooth">
+			<div id="content"> Message from bluetooth : <br /></div> <!--This is where the data from the server is added-->
 			<div id="explore"></div>
 		</div>
 
+		<!--
 		<form>
-			<input type="text" id="message" /> <!--text form to send data to the server-->
-			<input id="submit" type="button" value="Send data to Server">
-			<div id="content"></div> <!--This is where the data from the server is added-->
+			<button onclick="buttonClicked()">Get data from Server</button>
+			<div id="content"></div> This is where the data from the server is added
 		</form>
+		-->
 
 		<script type = "text/javascript">
 			document.getElementById("submit").disabled = true;
@@ -32,7 +39,6 @@
 				var socket = io.connect("/");
 				document.getElementById("submit").disabled = false;
 				//Initializing the connection with the server via websockets 
-				///*
 				socket.on("message", function(message){
 					//
 			                //   When server sends data to the client it will trigger "message" event on the client side , by 
@@ -44,9 +50,8 @@
 					//message = JSON.parse(message);
 					//console.log("Message from the server arrived 2: ", message)
 					//console.log("from server : ", message); 
-					$('#content').append('<div >'+message+'</div>'); //appending the data on the page using Jquery 
+					//$('#content').append('<div >'+message+'</div>'); //appending the data on the page using Jquery 
 				});
-				//*/
 				$(function(){
 					$('#submit').click(function(){ //listening to the button click using Jquery listener
 						var data =$('#message').val();// message;		
@@ -59,7 +64,21 @@
 						//Emptying the text box value using jquery 
 					});
 				});
-
+				$(function(){
+					$('#get').click(function(){ //listening to the button click using Jquery listener
+						socket.emit('clicked');
+					});
+				});
+				socket.on('buttonUpdate', function(data){
+					console.log("on client side : ", data);
+					$('#content').append('<div >'+data+'</div>'); //appending the data on the page using Jquery 
+					//document.getElementById("buttonCount").innerHTML = 'Message from bluetooth : ' + data;
+				});
+				/*
+				function buttonClicked(){
+					socket.emit('clicked');
+				}
+				*/
 			}
 		</script>
 

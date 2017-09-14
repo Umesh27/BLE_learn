@@ -93,7 +93,6 @@ function requestScan(){
 		}
 	});
 
-
 	socket.on('disconnectedPeripheral', function(data){
 		document.getElementById('explore').innerHTML = "";
 
@@ -108,7 +107,8 @@ function requestScan(){
 	socket.on('dataLogged', function(data){
 		console.log(data);
 
-		document.getElementById('explore').innerHTML = data;
+		//document.getElementById('explore').innerHTML = data;
+		document.getElementById('content').innerHTML = data;
 
 	});
 
@@ -116,12 +116,6 @@ function requestScan(){
 	socket.emit('scan');
 }
 
-function requestGet(){
-	socket = io.connect('http://localhost:8080/');
-	socket.emit('get');
-}
-
 var init = function(){	
 	document.getElementById('scan').addEventListener("click", requestScan);
-	document.getElementById('get').addEventListener("click", requestGet);
 }

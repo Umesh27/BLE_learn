@@ -55,7 +55,7 @@ var RSSIinterval;
 noble.on('stateChange', function(state) {
 	if (state === 'poweredOn') {
 		console.log("start scanning");
-		noble.startScanning([uartServiceUuid], false);		
+		noble.startScanning([], true);//[uartServiceUuid], false);		
 		//noble.startScanning();
 	} else {
 		noble.stopScanning();
@@ -69,7 +69,36 @@ noble.on('discover', function(peripheral) {
         // return;
         // }
         noble.stopScanning();
+	/*
+	var peripheralData = {
+		"name": peripheral.advertisement.localName,
+		"uuid": peripheral.uuid
+	}
 
+
+	//check if this peripheral has been found previously
+	var newPeripheral = true;
+	peripherals.forEach(function(element){
+	    	if(element.uuid === peripheral.uuid){
+    			newPeripheral = false;
+	    	}
+	});
+
+	//if it is a new one
+	if(newPeripheral){
+		console.log('Peripheral new found?');
+		console.log(peripheral.advertisement.localName);
+
+		//save to array in server
+		peripherals.push(peripheral);
+
+		//send peripheral discovered to client
+		io.sockets.emit('peripheral', peripheralData);
+		console.log(peripheralData);
+                console.log('Sent to client?');
+		//connectPeripheral(peripheral);
+	}
+	*/
         peripheral.connect(function(err) {
                 if (err) {
 	                console.error('Error connecting: ' + err);
@@ -106,30 +135,32 @@ noble.on('discover', function(peripheral) {
 	                                                rxCharacteristic.on('read', function(data, notification=false) {
 								console.log("value sent from bluetooth : " + notification);
 	                                                        if (notification) {
-									console.log("In read function : ");
+									console.log("Read from bluetooth device : ");
 		                                                        console.log(String(data));
 									fromBluetooth = String(data);
+									io.sockets.emit('dataLogged', fromBluetooth);
+									//logData(String(data));
 									/*	
 									io.sockets.on('connection', function(socket){
 										socket.emit('message', 'You are connected!');
 									});
 									*/
 		                                                        if (txCharacteristic && rxCharacteristic) {
-			                                                        console.log('Ready33');
+			                                                        //console.log('Ready33');
 										console.log("In first condition");
-			                                                        txCharacteristic.write(Buffer.from("try1"));
-		                                                        	console.log('Ready2');
+			                                                        txCharacteristic.write(Buffer.from("received",data));
+		                                                        	//console.log('Ready2');
 		                                                        }
 	                                                        }
                                                         });
                                                 }
 
                                                 if (txCharacteristic && rxCharacteristic) {
-							console.log('Ready');
+							//console.log('Ready');
 							console.log("In second condition");
 							txCharacteristic.write(Buffer.from("AT"));
 							//txCharacteristic.write(Buffer.from("try1"));
-							console.log('Ready2');
+							//console.log('Ready2');
                                                 }
                                         });
                                 });
@@ -146,9 +177,37 @@ noble.on('discover', function(peripheral) {
                 });
         });
 });
-console.log("Outside noble : " + fromBluetooth);
-/*
+//console.log("Outside noble : " + fromBluetooth);
+///*
+
+//this function is called in the sockets part
+function connectPeripheral(peripheral) {
+	/*noble.stopScanning();
+
+	//connect to peripheral
+	peripheral.connect(function(error){
+        	console.log('connected to peripheral');  
+	        connected = peripheral.uuid;
+
+		//log some data from it
+		logData(peripheral);
+	
+		//read RSSI every 60 seconds
+		RSSIinterval = setInterval(getRSSI, 60);  
+
+		//callback function to once disconnect happens
+		peripheral.once('disconnect', function() {
+			console.log('peripheral disconneted');
+			connected = "";
+			clearInterval();
+		        io.sockets.emit('disconnectedPeripheral', peripheral.uuid);
+       			noble.startScanning();
+		});
+  	});*/
+}
+
 function logData(peripheral){
+	/*
 	var advertisement = peripheral.advertisement;
 	var localName = advertisement.localName;
 	var txPowerLevel = advertisement.txPowerLevel;
@@ -158,7 +217,8 @@ function logData(peripheral){
 	
 	var data = "Peripheral with name "+localName + " and UUID " + peripheral.uuid  + " has signal strenght (RSSI) of <span id='rssi'>"+ peripheral.rssi+".<span>" ;
 	//<br/> TX Power Level "+ txtPowerLevel + ", Manufacturer "+ manufacturerData;
-	
+	*/
+	data = peripheral;
 	io.sockets.emit('dataLogged',data);
 
 }
@@ -175,7 +235,7 @@ function getRSSI(peripheral){
 		}
 	}
 }
-*/
+//*/
 
 var io = require('socket.io').listen(server);
 io.sockets.on('connection', 
@@ -183,8 +243,8 @@ io.sockets.on('connection',
 	function (socket) {	
 		
 		//check if clients are connected
-		//console.log("We have a new client: " );	
-		console.log("We have a new client: " + socket.id);
+		console.log("We have a new client: " );	
+		//console.log("We have a new client: " + socket.id);
 
 		socket.on('scan', function() {
 			// Request to rescan
@@ -207,16 +267,21 @@ io.sockets.on('connection',
 		//console.log("In socket connection : !!!!!!!!!!");
 		//socket.emit('message', fromBluetooth);
 		socket.on('message', function(data) {
-			console.log('Ready in send function');
+			//console.log('Ready in send function');
 			if (txCharacteristic && rxCharacteristic) {
+				console.log('message from client : ');
 				console.log(data);
 			        txCharacteristic.write(Buffer.from(data));
-				console.log('Ready2 in send function');
+				console.log('Message from bluetooth : ');
 				var ack_to_client = fromBluetooth;//data;
-				console.log(ack_to_client);
+				//console.log(ack_to_client);
 				//socket.send(JSON.stringify(ack_to_client));	//Sending the Acknowledgement back to the client , this will trigger "message" event on the clients side
 				socket.send(ack_to_client);	//Sending the Acknowledgement back to the client , this will trigger "message" event on the clients side
                         }
+		});
+		socket.on('clicked', function(data){
+			console.log("click function : ", fromBluetooth);
+			socket.emit('buttonUpdate', fromBluetooth);
 		});
 
 		
