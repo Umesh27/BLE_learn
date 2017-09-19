@@ -15,6 +15,7 @@ var noble = require('noble'),
     http = require('http'),
     async = require('async'),
     open = require("open");
+var count = 0;
 //var io = require('socket.io').listen(server);
 
 
@@ -133,13 +134,30 @@ noble.on('discover', function(peripheral) {
 	                                                rxCharacteristic = characteristic;
 	                                                rxCharacteristic.notify(true);
 	                                                rxCharacteristic.on('read', function(data, notification=false) {
-								console.log("value sent from bluetooth : " + notification);
+								//console.log("value sent from bluetooth : " + notification);
 	                                                        if (notification) {
-									console.log("Read from bluetooth device : ");
-		                                                        console.log(String(data));
+									count = count + 1;
+									//console.log("Read from bluetooth device : ");
+									//fromBluetooth = getData(String(data));
 									fromBluetooth = String(data);
-									io.sockets.emit('dataLogged', fromBluetooth);
-									//logData(String(data));
+		                                                        //console.log("Before format : " + data);
+									
+									//var isNewLine = String(data).search(char(34));
+									//if(isNewLine != null)
+										//{
+										//console.log("Newline Found" + String(data).Substring(0,isNewLine));
+
+											//}
+									//fromBluetooth = String(data).trim().endsWith("\n");
+		                                                        //console.log(String);
+		                                                        //console.log("After format : " + fromBluetooth);
+									if (count === 1){
+
+		                                                        	console.log(fromBluetooth);
+		                                                        	//console.log(fromBluetooth.split('\n')[0]);
+										io.sockets.emit('dataLogged', fromBluetooth);
+										count = 0;
+									}//logData(String(data));
 									/*	
 									io.sockets.on('connection', function(socket){
 										socket.emit('message', 'You are connected!');
@@ -147,7 +165,7 @@ noble.on('discover', function(peripheral) {
 									*/
 		                                                        if (txCharacteristic && rxCharacteristic) {
 			                                                        //console.log('Ready33');
-										console.log("In first condition");
+										//console.log("In first condition");
 			                                                        txCharacteristic.write(Buffer.from("received",data));
 		                                                        	//console.log('Ready2');
 		                                                        }
@@ -157,7 +175,7 @@ noble.on('discover', function(peripheral) {
 
                                                 if (txCharacteristic && rxCharacteristic) {
 							//console.log('Ready');
-							console.log("In second condition");
+							//console.log("In second condition");
 							txCharacteristic.write(Buffer.from("AT"));
 							//txCharacteristic.write(Buffer.from("try1"));
 							//console.log('Ready2');
@@ -180,6 +198,15 @@ noble.on('discover', function(peripheral) {
 //console.log("Outside noble : " + fromBluetooth);
 ///*
 
+function getData(data){
+	var tempData = data;
+	var n = tempData.indexOf('\n');
+	
+	while(~n){
+		var tempData1 = tempData.substring((0, n));
+		return tempData1;
+	}
+}
 //this function is called in the sockets part
 function connectPeripheral(peripheral) {
 	/*noble.stopScanning();
@@ -243,7 +270,7 @@ io.sockets.on('connection',
 	function (socket) {	
 		
 		//check if clients are connected
-		console.log("We have a new client: " );	
+		//console.log("We have a new client: " );	
 		//console.log("We have a new client: " + socket.id);
 
 		socket.on('scan', function() {
@@ -269,10 +296,10 @@ io.sockets.on('connection',
 		socket.on('message', function(data) {
 			//console.log('Ready in send function');
 			if (txCharacteristic && rxCharacteristic) {
-				console.log('message from client : ');
-				console.log(data);
+				//console.log('message from client : ');
+				//console.log(data);
 			        txCharacteristic.write(Buffer.from(data));
-				console.log('Message from bluetooth : ');
+				//console.log('Message from bluetooth : ');
 				var ack_to_client = fromBluetooth;//data;
 				//console.log(ack_to_client);
 				//socket.send(JSON.stringify(ack_to_client));	//Sending the Acknowledgement back to the client , this will trigger "message" event on the clients side
